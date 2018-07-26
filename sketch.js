@@ -1,5 +1,9 @@
+/**
+ * @return {[type]}
+ */
 function setup() {
-  createCanvas(1000, 700);
+  createCanvas(700, 700);
+
   var result = [
     {entity : 'Trump', occurrences : 14},
     {entity : 'Peña', occurrences : 20},
@@ -7,15 +11,32 @@ function setup() {
     {entity : "AMLO", occurrences : 30},
     {entity : "Dolar", occurrences : 45},
     {entity : "Anaya", occurrences : 40},
-    {entity : "Meade", occurrences : 35}
+    {entity : "Meade", occurrences : 30}
   ];
   bubbles = new Array;
   for(let i = 0; i < result.length; i++) {
-    bubbles.push(new Bubble(result[i].occurrences, result[i].entity));
+  	var x = random() * width;
+  	var y = random() * height;
+  	let size = result[i].occurrences * 2;
+  	let entity = result[i].entity;
+  	bubbles.push(new Bubble(size, entity, x, y));
   }
-  center = new Center();
+
+  for(let i = 0; i < bubbles.length; i++) {
+  	for(let j = 0; j < bubbles.length; j++) {
+  		let biggestBubble = (bubbles[i].size < bubbles[j].size && bubbles[i] != bubbles[j]) ? bubbles[j].size + 10: bubbles[i].size + 10;
+  		if(bubbles[i] != bubbles[j] && dist(bubbles[i].x, bubbles[i].y, bubbles[j].x, bubbles[j].y) < biggestBubble) {
+  			bubbles[j].x = random() * width;
+  			bubbles[j].y = random() * height;
+  		}
+  	}
+  }
   zoom = 0;
 }
+
+/**
+ * 
+ */
 
 function draw() {
   clear();
@@ -23,18 +44,36 @@ function draw() {
   for(let i = 0; i < bubbles.length; i++) {
     bubbles[i].show();
     bubbles[i].update();
+    stroke(0)
+  	ellipse(width/2, height/2, 10, 10);
     for(let j = 0; j < bubbles.length; j++) {
       if(bubbles[i] != bubbles[j]) {
-        console.log(bubbles[i].entity + ' ' + bubbles[j].entity)
-        let biggestBubble = (bubbles[i].size < bubbles[j].size) ? bubbles[j].size * 2.5 +10 : bubbles[i].size * 2.5 +10;
-        if(dist(bubbles[i].x, bubbles[i].y, bubbles[j].x, bubbles[j].y) < biggestBubble && dist(bubbles[j].x, bubbles[j].y, width/2, height/2) < 300) {
-          bubbles[j].velocityX = bubbles[j].velocityX * (-0.5);
-          bubbles[j].velocityY = bubbles[j].velocityY * (-0.5);
+      	stroke(255, 0, 0);
+        let biggestBubble = (bubbles[i].size < bubbles[j].size) ? bubbles[j].size + 5 : bubbles[i].size + 5;
+
+        if((dist(bubbles[i].x, bubbles[i].y, bubbles[j].x, bubbles[j].y) < biggestBubble +5)) {
+	        bubbles[j].velocityX = 0;
+	        bubbles[j].velocityY = 0;
+	        bubbles[j].gravity = 0;
+        	bubbles[i].move();
+        }
+        if((dist(bubbles[i].x, bubbles[i].y, bubbles[j].x, bubbles[j].y) < biggestBubble - 10)) {
+        	console.log('choque')
         }
       }
     }
+    if(dist(bubbles[i].x, bubbles[i].y, width/2, height/2) < 50) {
+    	bubbles[i].velocityX = 0;
+        bubbles[i].velocityY = 0;
+        bubbles[i].gravity = 0;
+    	bubbles[0].move();
+    }
   }
 }
+
+/**
+ * 
+ */
 
 function mousePressed() {
   for(let i = 0; i < bubbles.length; i++) {
@@ -42,6 +81,9 @@ function mousePressed() {
   }
 }
 
+/**
+ * @return {[type]}
+ */
 function mouseWheel() {
   for(let i = 0; i < bubbles.length; i++) {
     bubbles[i].zoom();
